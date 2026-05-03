@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+//编译命令为：g++ src/camera_calibration.cpp -o bin/camera_calibration `pkg-config --cflags --libs opencv4`
+
 int main() {
     // 1. 批量读取标定图片
     std::vector<cv::String> imagePaths;
@@ -79,7 +81,7 @@ int main() {
         cameraMatrix,   // 输出：内参矩阵
         distCoeffs,     // 输出：畸变系数 (k1,k2,p1,p2,k3)
         cv::noArray(),  // 标定选项（默认即可）
-        cv::noArray(),  // 标定选项（默认即可）
+        cv::noArray()  // 标定选项（默认即可）
     );
     
     // 7. 输出结果
