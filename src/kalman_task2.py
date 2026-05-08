@@ -1,48 +1,44 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
-
-# 读取数据
-def read_data(file_path):
-    data = np.loadtxt(file_path)
-    time = data[:, 0]
-    measurements = data[:, 1]
-    return time, measurements
+import pandas as pd
 
 # 卡尔曼滤波实现
 def kalman_filter(data, process_variance, measurement_variance):
     n = len(data)
-    x_est = np.zeros(n)  # 状态估计值
-    p_est = np.zeros(n)  # 估计协方差
-
     # 初始化
-    x_est[0] = data[0]  # 初始状态
-    p_est[0] = 1.0  # 初始协方差
-
-    for k in range(1, n):
+    x = np.array([[data[0]], [0.0]])  # 状态向量 [位置, 速度]
+    p = np.array([[1.0, 0.0], [0.0, 1.0]])  # 协方差矩阵
+    H = np.array([[1.0, 0.0]])  # 观测矩阵
+    F = np.array([[1.0, 1.0], [0.0, 1.0]])  # 状态转移矩阵
+    Q = np.array([[1/3.0*process_variance, 0.5*process_variance],
+                  [0.5*process_variance, process_variance]])  # 过程噪声协方差
+    R = measurement_variance  # 测量噪声协方差
+    results = np.zeros(n)
+    for k in range(n):
         # 预测步骤
-        x_pred = x_est[k - 1]  # 状态预测
-        p_pred = p_est[k - 1] + process_variance  # 协方差预测
-
+        x = F @ x  # 状态预测
+        p = F @ p @ F.T + Q  # 协方差预测
         # 更新步骤
-        kalman_gain = p_pred / (p_pred + measurement_variance)  # 卡尔曼增益
-        x_est[k] = x_pred + kalman_gain * (data[k] - x_pred)  # 更新状态估计
-        p_est[k] = (1 - kalman_gain) * p_pred  # 更新协方差
+        kalman_gain = p @ H.T / (H @ p @ H.T + R)  # 卡尔曼增益
+        x = x + kalman_gain * (data[k] - H @ x)  # 更新状态估计
+        p = (np.eye(2) - kalman_gain @ H) @ p  # 更新协方差
+        results[k] = (H @ x)[0, 0]  # 记录滤波结果
 
-    return x_est
+    return results
 
 # 绘制曲线
-def plot_results(time, measurements, filtered_data, update_func):
+def plot_results(days, prices, filtered_data, update_func):
     fig, ax = plt.subplots(figsize=(10, 6))
     plt.subplots_adjust(left=0.25, bottom=0.25)
 
     # 初始绘图
-    original_line, = ax.plot(time, measurements, label="original data", marker=".", markersize=1, ls='')
-    kalman_line, = ax.plot(time, filtered_data, label="kalman", linewidth=1)
+    original_line, = ax.plot(days, prices, label="Original Prices", marker=".", markersize=4, ls='')
+    kalman_line, = ax.plot(days, filtered_data, label="Kalman Filtered", linewidth=1)
 
-    ax.set_xlabel("time")
-    ax.set_ylabel("measurement")
-    ax.set_title("Kalman Filter and Curve Fitting")
+    ax.set_xlabel("Days")
+    ax.set_ylabel("Price")
+    ax.set_title("Stock Prices with Kalman Filter")
     ax.legend()
     ax.grid()
 
@@ -67,11 +63,11 @@ def plot_results(time, measurements, filtered_data, update_func):
     plt.show()
 
 if __name__ == "__main__":
-    # 文件路径
-    file_path = "../data/kalman/homework_data_4.txt"
-
-    # 读取数据
-    time, measurements = read_data(file_path)
+    # 读取CSV数据
+    file_path = "../data/kalman/stock_prices.csv"
+    data = pd.read_csv(file_path)
+    days = data['Day'].values
+    prices = data['Price'].values
 
     # 卡尔曼滤波参数
     initial_process_variance = 1e-3  # 初始过程噪声方差
@@ -79,9 +75,9 @@ if __name__ == "__main__":
 
     # 应用卡尔曼滤波
     def update_filtered_data(process_variance, measurement_variance):
-        return kalman_filter(measurements, process_variance, measurement_variance)
+        return kalman_filter(prices, process_variance, measurement_variance)
 
     filtered_data = update_filtered_data(initial_process_variance, initial_measurement_variance)
 
     # 绘制结果
-    plot_results(time, measurements, filtered_data, update_filtered_data)
+    plot_results(days, prices, filtered_data, update_filtered_data)
