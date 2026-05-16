@@ -1,9 +1,12 @@
 #include<iostream>
 #include<cmath>
 #include "quaternion.h"
+#include <opencv2/opencv.hpp>
  
 using namespace std;
  
+//编译命令: g++ -o bin/coordinate_system_transformation src/coordinate_system_transformation.cpp src/quaternion.cpp  -I ./include `pkg-config --cflags --libs opencv4`
+
 // 将 ZYX (yaw, pitch, roll) 欧拉角转换为四元数
 static Quaternion quaternionFromEulerZYX(double yaw, double pitch, double roll) {
 	double cy = cos(yaw * 0.5);
@@ -57,50 +60,72 @@ static cv::Vec3d rotateVector(const cv::Vec3d &v, const Quaternion &rot) {
 // 输入:
 //  - pos : 当前位姿位置 (x,y,z)
 //  - euler : 当前位姿姿态 (yaw, pitch, roll) （ZYX）
-//  - frame_current_euler : 当前坐标系相对于某参考系的 ZYX 欧拉角 (yaw,pitch,roll)
-//  - frame_target_euler  : 目标坐标系相对于同一参考系的 ZYX 欧拉角
+//  - t_diff : 目标坐标系原点在参考系下的位置减去当前坐标系原点在参考系下的位置（位置差），在参考系下表示
+// 输出:
+//  - out_pos : 在目标坐标系下的位姿位置
+//  - out_euler: 在目标坐标系下的姿态 (yaw,pitch,roll)
+// 封装的坐标系转换函数（使用已计算好的相对旋转四元数 `q_rel`）
+// 输入:
+//  - pos : 当前位姿位置 (x,y,z)
+//  - euler : 当前位姿姿态 (yaw, pitch, roll) （ZYX）
+//  - q_rel : 当前坐标系到目标坐标系的相对旋转（单位四元数）
 //  - t_diff : 目标坐标系原点在参考系下的位置减去当前坐标系原点在参考系下的位置（位置差），在参考系下表示
 // 输出:
 //  - out_pos : 在目标坐标系下的位姿位置
 //  - out_euler: 在目标坐标系下的姿态 (yaw,pitch,roll)
 static void transformPose(const cv::Vec3d &pos, const cv::Vec3d &euler,
-						  const cv::Vec3d &frame_current_euler, const cv::Vec3d &frame_target_euler,
-						  const cv::Vec3d &t_diff,
+						  const Quaternion &q_rel, const cv::Vec3d &t_diff,
 						  cv::Vec3d &out_pos, cv::Vec3d &out_euler) {
-	// 计算当前/目标坐标系的旋转四元数（相对于相同参考系）
-	Quaternion q_currFrame = quaternionFromEulerZYX(frame_current_euler[0], frame_current_euler[1], frame_current_euler[2]);
-	Quaternion q_tgtFrame = quaternionFromEulerZYX(frame_target_euler[0], frame_target_euler[1], frame_target_euler[2]);
-
-	// 相对旋转：将当前坐标系的向量转换到目标坐标系的旋转
-	Quaternion q_rel = q_tgtFrame * q_currFrame.inverse();
-	q_rel.normalize();
+	// 假定 q_rel 已为单位四元数并表示从当前坐标系到目标坐标系的旋转
+	Quaternion q_rel_norm = q_rel;
+	q_rel_norm.normalize();
 
 	// 旋转位置向量并加上位置差（位置差应为目标原点在参考系下减去当前原点在参考系下）
-	cv::Vec3d rotated_pos = rotateVector(pos, q_rel);
+	cv::Vec3d rotated_pos = rotateVector(pos, q_rel_norm);
 	out_pos = rotated_pos + t_diff;
 
 	// 姿态变换：新姿态四元数 = q_rel * q_pose
 	Quaternion q_pose = quaternionFromEulerZYX(euler[0], euler[1], euler[2]);
-	Quaternion q_new = q_rel * q_pose;
+	Quaternion q_new = q_rel_norm * q_pose;
 	q_new.normalize();
 	out_euler = quaternionToEulerZYX(q_new);
 }
 
-// 简单示例（可被替换为更完整的接口）
-int main_example_transform() {
-	cv::Vec3d pos(1.0, 0.0, 0.0);
-	cv::Vec3d euler_pose(0.0, 0.0, 0.0); // yaw,pitch,roll
 
-	// 假设当前坐标系与参考系对齐，目标坐标系绕 z 轴 90deg，并往 x 方向平移 1
-	cv::Vec3d frame_curr(0.0, 0.0, 0.0);
-	cv::Vec3d frame_tgt(M_PI/2.0, 0.0, 0.0);
-	cv::Vec3d tdiff(1.0, 0.0, 0.0);
+
+int main() {
+	// 第一行：6 个量 -> pos.x pos.y pos.z yaw pitch roll
+	// 第二行：6 个量 -> t_diff.x t_diff.y t_diff.z  rel_yaw rel_pitch rel_roll
+
+	double px, py, pz, yaw, pitch, roll;
+	if (!(cin >> px >> py >> pz >> yaw >> pitch >> roll)) {
+		cerr << "Expect 6 numbers on first line: px py pz yaw pitch roll\n";
+		return 1;
+	}
+	cv::Vec3d pos(px, py, pz);
+	cv::Vec3d euler_pose(yaw, pitch, roll);
+
+	double td0, td1, td2, ryaw, rpitch, rroll;
+	if (!(cin >> td0 >> td1 >> td2 >> ryaw >> rpitch >> rroll)) {
+		cerr << "Expect 6 numbers on second line: tdiff_x tdiff_y tdiff_z rel_yaw rel_pitch rel_roll\n";
+		return 1;
+	}
+	cv::Vec3d t_diff(td0, td1, td2);
+
+	Quaternion q_rel = quaternionFromEulerZYX(ryaw, rpitch, rroll);
+	q_rel.normalize();
 
 	cv::Vec3d out_pos, out_euler;
-	transformPose(pos, euler_pose, frame_curr, frame_tgt, tdiff, out_pos, out_euler);
-	cout << "Out pos: " << out_pos << "\n";
-	cout << "Out euler (yaw,pitch,roll): " << out_euler << "\n";
+	transformPose(pos, euler_pose, q_rel, t_diff, out_pos, out_euler);
+	//输出精度设置为小数点后2位，使用固定小数点格式
+	cout.setf(std::ios::fixed);
+	cout.precision(2);
+	cout << out_pos[0] << " " << out_pos[1] << " " << out_pos[2] << " ";
+	cout << out_euler[0] << " " << out_euler[1] << " " << out_euler[2] << "\n";
+
 	return 0;
 }
+
+
 
 
