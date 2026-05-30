@@ -85,7 +85,7 @@ int main()
 	q_rel.normalize();
     
 	// 卡尔曼滤波初始化（状态：位置(x,y,z) 和 速度(vx,vy,vz)）
-	double process_variance = 1e-3; // 与 python 中一致
+	double process_variance = 1e-3; 
 	double measurement_variance = 1e-2;
 	SimpleKalman kf;
 	bool kf_inited = false;
@@ -107,7 +107,7 @@ int main()
 		0.0, 0.0, 1.0);
 	cv::Mat distCoeffs = (cv::Mat_<double>(5,1) << 
 		-0.0682737005569565, 0.1983544402464456, 0.0016855914452479342, 0.0024125119646311016, 0.0);
-	const float SMALL_ARMOR_WIDTH  = 0.135f; 
+	const float SMALL_ARMOR_WIDTH  = 0.135f; // 与 python 中一致
 	const float SMALL_ARMOR_HEIGHT = 0.055f; 
 
 	while(true)
@@ -133,7 +133,7 @@ int main()
 			cv::Vec3d pos_cam(pt_cam.x, pt_cam.y, pt_cam.z);
 			// 使用四元数旋转并加平移，得到目标坐标系下的坐标
 			cv::Vec3d out_pos = Quaternion::rotateVector(pos_cam, q_rel) + t_diff;
-			// 根据目标坐标系下的位置计算 yaw 和 pitch（假设相机/目标前向为 +Z，x 右，y 上）
+			// 根据目标坐标系下的位置计算 yaw 和 pitch（假设相机/目标前向为 +Z，x 右，y 下）
 			double yaw_deg = atan2(out_pos[0], out_pos[2]) * 180.0 / M_PI; // 横向角度
 			double pitch_deg = atan2(out_pos[1], out_pos[2]) * 180.0 / M_PI; // 俯仰角
 			// 使用卡尔曼滤波器处理目标坐标（作为观测值）

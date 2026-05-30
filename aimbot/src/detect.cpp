@@ -152,7 +152,7 @@ std::vector<Armor> detectFrame(const cv::Mat& frame, cv::Mat& debug_image, const
     std::vector<Armor> armors = matchArmors(lights_copy, params);
 
     debug_image = frame.clone();
-    // 绘制灯条（绿色）
+    // 绘制灯条
     for(size_t idx=0; idx<lights.size(); ++idx)
     {
         const LightBar& L = lights[idx];
