@@ -146,7 +146,7 @@ int main()
 				filt_pos = kf.predictUpdate(out_pos, process_variance, measurement_variance);
 			}
 			double filt_yaw_deg = atan2(filt_pos[0], filt_pos[2]) * 180.0 / M_PI;
-			double filt_pitch_deg = atan2(filt_pos[1], filt_pos[2]) * 180.0 / M_PI;
+			double filt_pitch_deg = -atan2(filt_pos[1], filt_pos[2]) * 180.0 / M_PI;
 
 			// 实时输出：装甲索引、相机系坐标 -> 目标系坐标(raw) -> 目标系坐标(filtered) -> yaw/pitch
 			std::cout.setf(std::ios::fixed);
