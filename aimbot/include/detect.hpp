@@ -28,9 +28,9 @@ struct Armor {
 // 参数结构体，便于调整
 struct DetectParams {
     // 红色两段 HSV 阈值（默认值可调）
-    cv::Scalar red_lower1 = cv::Scalar(0, 120, 120);
+    cv::Scalar red_lower1 = cv::Scalar(0, 70, 70);
     cv::Scalar red_upper1 = cv::Scalar(10, 255, 255);
-    cv::Scalar red_lower2 = cv::Scalar(170, 120, 120);
+    cv::Scalar red_lower2 = cv::Scalar(170, 70, 70);
     cv::Scalar red_upper2 = cv::Scalar(180, 255, 255);
 
     // 形态学核大小

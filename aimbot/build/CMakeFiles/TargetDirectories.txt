@@ -1,0 +1,3 @@
+/home/omup/code/rm_homework/aimbot/build/CMakeFiles/aimbot.dir
+/home/omup/code/rm_homework/aimbot/build/CMakeFiles/edit_cache.dir
+/home/omup/code/rm_homework/aimbot/build/CMakeFiles/rebuild_cache.dir
