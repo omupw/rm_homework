@@ -49,11 +49,11 @@ struct DetectParams {
     float max_light_angle = 30.0f; // degrees
 
     // 配对筛选
-    float max_center_y_diff = 40.0f; // 垂直中心差
+    float max_center_y_diff = 8.0f; // 垂直中心差
     float max_angle_diff = 20.0f;    // 灯条角度差
     float min_height_ratio = 0.3f;   // 高度比（short/long）
-    float min_armor_ratio = 0.5f;    // 装甲宽高比 min
-    float max_armor_ratio = 8.0f;    // 装甲宽高比 max
+    float min_armor_ratio = 0.01f;    // 装甲宽高比 min
+    float max_armor_ratio = 3.0f;    // 装甲宽高比 max
 
     // 灯条间距倍数范围（相对于平均高度）
     float min_gap_mul = 0.5f;
