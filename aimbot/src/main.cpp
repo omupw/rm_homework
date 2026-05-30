@@ -135,7 +135,7 @@ int main()
 			cv::Vec3d out_pos = Quaternion::rotateVector(pos_cam, q_rel) + t_diff;
 			// 根据目标坐标系下的位置计算 yaw 和 pitch（假设相机/目标前向为 +Z，x 右，y 下）
 			double yaw_deg = atan2(out_pos[0], out_pos[2]) * 180.0 / M_PI; // 横向角度
-			double pitch_deg = atan2(out_pos[1], out_pos[2]) * 180.0 / M_PI; // 俯仰角
+			double pitch_deg = -atan2(out_pos[1], out_pos[2]) * 180.0 / M_PI; // 俯仰角
 			// 使用卡尔曼滤波器处理目标坐标（作为观测值）
 			cv::Vec3d filt_pos;
 			if(!kf_inited) {
