@@ -11,3 +11,4 @@ file(GLOB SRC_FILES src/*.cpp)
 
 add_executable(aimbot ${SRC_FILES})
 target_link_libraries(aimbot ${OpenCV_LIBS})
+

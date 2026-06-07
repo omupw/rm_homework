@@ -28,8 +28,8 @@ struct Armor {
 // 参数结构体，便于调整
 struct DetectParams {
     // 红色两段 HSV 阈值（默认值可调）
-    cv::Scalar red_lower1 = cv::Scalar(0, 70, 70);
-    cv::Scalar red_upper1 = cv::Scalar(10, 255, 255);
+    cv::Scalar red_lower1 = cv::Scalar(85, 70, 90);
+    cv::Scalar red_upper1 = cv::Scalar(115, 255, 255);
     cv::Scalar red_lower2 = cv::Scalar(170, 70, 70);
     cv::Scalar red_upper2 = cv::Scalar(180, 255, 255);
 
@@ -38,22 +38,22 @@ struct DetectParams {
     int close_kernel = 5;
 
     // 面积筛选
-    float min_area = 30.0f;
-    float max_area = 5000.0f;
+    float min_area = 40.0f;
+    float max_area = 30000.0f;
 
     // 灯条长宽比
     float min_light_ratio = 1.5f; // length / width
     float max_light_ratio = 15.0f;
 
     // 灯条最大倾角（与竖直方向偏差）
-    float max_light_angle = 30.0f; // degrees
+    float max_light_angle = 20.0f; // degrees
 
     // 配对筛选
     float max_center_y_diff = 8.0f; // 垂直中心差
-    float max_angle_diff = 20.0f;    // 灯条角度差
+    float max_angle_diff = 8.0f;    // 灯条角度差
     float min_height_ratio = 0.3f;   // 高度比（short/long）
     float min_armor_ratio = 0.01f;    // 装甲宽高比 min
-    float max_armor_ratio = 3.0f;    // 装甲宽高比 max
+    float max_armor_ratio = 6.0f;    // 装甲宽高比 max
 
     // 灯条间距倍数范围（相对于平均高度）
     float min_gap_mul = 0.5f;

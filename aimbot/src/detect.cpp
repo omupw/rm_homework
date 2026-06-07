@@ -10,8 +10,8 @@ static void preprocess(const cv::Mat& frame, cv::Mat& closed, const DetectParams
     cv::GaussianBlur(frame, blurred, cv::Size(3,3), 0);
     cv::cvtColor(blurred, hsv, cv::COLOR_BGR2HSV);
     cv::inRange(hsv, params.red_lower1, params.red_upper1, binary1);
-    cv::inRange(hsv, params.red_lower2, params.red_upper2, binary2);
-    cv::bitwise_or(binary1, binary2, binary1);//合并两段红色
+    //cv::inRange(hsv, params.red_lower2, params.red_upper2, binary2);
+    //cv::bitwise_or(binary1, binary2, binary1);//合并两段红色
 
     cv::Mat open_kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(params.open_kernel, params.open_kernel));
     cv::morphologyEx(binary1, closed, cv::MORPH_OPEN, open_kernel);//开运算去噪

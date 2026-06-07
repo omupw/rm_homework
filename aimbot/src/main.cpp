@@ -90,7 +90,7 @@ int main()
 	SimpleKalman kf;
 	bool kf_inited = false;
 	// Load the video
-    cv::VideoCapture cap("../data/armor/avi.mp4");
+    cv::VideoCapture cap("../data/armor/12.mp4");
 	if(!cap.isOpened())
 	{
 		std::cerr << "无法打开视频 " << std::endl;
